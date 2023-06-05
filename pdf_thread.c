@@ -9,12 +9,12 @@
 
 
 void convert_pdf_func(pdf_thread_info *info){
-    init_convert_pdf();
+    wk_global * g_info = init_convert_pdf();
     signal_wait_one(info->waiter);
     while (1){
         void * elem = pop(info->q);
         convert_task * task = (convert_task*)elem;
-        convert_pdf(task);
+        convert_pdf(task,g_info);
     }
 }
 
