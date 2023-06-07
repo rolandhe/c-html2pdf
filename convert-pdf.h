@@ -17,8 +17,8 @@ typedef struct _convert_task{
 } convert_task;
 
 typedef struct _wk_global {
-    wkhtmltopdf_global_settings * gs;
-    wkhtmltopdf_object_settings * os;
+    wkhtmltopdf_global_settings * out_setting;
+    wkhtmltopdf_object_settings * in_setting;
 }wk_global;
 
 convert_task * create_task(struct evhttp_request *req);

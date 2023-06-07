@@ -15,12 +15,7 @@ int main() {
     //默认参数
     char *httpd_option_listen = "0.0.0.0";
     int httpd_option_port = 8080;
-    int httpd_option_daemon = 0;
     int httpd_option_timeout = 120; //in seconds
-
-    printf("%ld\n",get_nano());
-
-
 
 
     //初始化event API
@@ -41,10 +36,10 @@ int main() {
 //    }
 //    if (pid > 0) {
 //        //生成子进程成功，退出父进程
-////            exit(EXIT_SUCCESS);
+//            exit(EXIT_SUCCESS);
 //    }
 
-    threed_pool  * pool = init_pool(10,20);
+    threed_pool  * pool = init_pool(4,15);
     pdf_thread_info * thread_info = init_pdf_thread_info(10,pool->q);
     start_pool(pool);
     start_pdf_thread(thread_info);

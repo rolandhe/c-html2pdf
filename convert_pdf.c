@@ -31,15 +31,15 @@ void destroy_task(convert_task * task){
 wk_global* init_convert_pdf(){
     wkhtmltopdf_init(0);
     wk_global* g_info = (wk_global*) malloc(sizeof (wk_global));
-    g_info->gs = wkhtmltopdf_create_global_settings();
-    g_info->os = wkhtmltopdf_create_object_settings();
-    wkhtmltopdf_set_object_setting(g_info->os,"documentTitle","documentTitle");
-    wkhtmltopdf_set_object_setting(g_info->os,"size.pageSize","A4");
-    wkhtmltopdf_set_object_setting(g_info->os,"orientation","Portrait");
-    wkhtmltopdf_set_object_setting(g_info->os,"margin.top","1cm");
-    wkhtmltopdf_set_object_setting(g_info->os,"margin.bottom","1cm");
-    wkhtmltopdf_set_object_setting(g_info->os,"margin.left","10mm");
-    wkhtmltopdf_set_object_setting(g_info->os,"margin.right","10mm");
+    g_info->out_setting = wkhtmltopdf_create_global_settings();
+    g_info->in_setting = wkhtmltopdf_create_object_settings();
+    wkhtmltopdf_set_object_setting(g_info->in_setting, "documentTitle", "documentTitle");
+    wkhtmltopdf_set_object_setting(g_info->in_setting, "size.pageSize", "A4");
+    wkhtmltopdf_set_object_setting(g_info->in_setting, "orientation", "Portrait");
+    wkhtmltopdf_set_object_setting(g_info->in_setting, "margin.top", "1cm");
+    wkhtmltopdf_set_object_setting(g_info->in_setting, "margin.bottom", "1cm");
+    wkhtmltopdf_set_object_setting(g_info->in_setting, "margin.left", "10mm");
+    wkhtmltopdf_set_object_setting(g_info->in_setting, "margin.right", "10mm");
     return g_info;
 }
 
@@ -58,24 +58,24 @@ void save_html(char * html,int size,char* path){
     fclose(out);
 }
 
-char * read_pdf_base64(char * pdf_path,int* base64_len){
-    struct stat file_info;
-    stat(pdf_path,&file_info);
-    char * content = malloc(file_info.st_size);
-    FILE * file = fopen(pdf_path,"r");
-
-    fread(content,sizeof (char),file_info.st_size,file);
-    fclose(file);
-
-    int b64_len = Base64encode_len(file_info.st_size);
-    char * base64_data = malloc(b64_len+1);
-
-    int b_len =  Base64encode(base64_data,content,file_info.st_size);
-    printf("base64 encoded len:%d\n",b_len);
-    free(content);
-    *base64_len = b_len;
-    return base64_data;
-}
+//char * read_pdf_base64(char * pdf_path,int* base64_len){
+//    struct stat file_info;
+//    stat(pdf_path,&file_info);
+//    char * content = malloc(file_info.st_size);
+//    FILE * file = fopen(pdf_path,"r");
+//
+//    fread(content,sizeof (char),file_info.st_size,file);
+//    fclose(file);
+//
+//    int b64_len = Base64encode_len(file_info.st_size);
+//    char * base64_data = malloc(b64_len+1);
+//
+//    int b_len =  Base64encode(base64_data,content,file_info.st_size);
+//    printf("base64 encoded len:%d\n",b_len);
+//    free(content);
+//    *base64_len = b_len;
+//    return base64_data;
+//}
 
 void convert_pdf(convert_task * task,wk_global * g_info,safe_queue * dispatch){
     char html_path[512];
@@ -88,26 +88,21 @@ void convert_pdf(convert_task * task,wk_global * g_info,safe_queue * dispatch){
     save_html(post_data, task->req->body_size,html_path);
 //    build_path(pdf_path,"pdf");
 
-
     /* We want the result to be storred in the file called test.pdf */
-//    wkhtmltopdf_set_global_setting(g_info->gs, "out", pdf_path);
-
-
+//    wkhtmltopdf_set_global_setting(g_info->out_setting, "out", pdf_path);
 
     /* We want to convert to convert the qstring documentation page */
-    wkhtmltopdf_set_object_setting(g_info->os, "page", html_path);
-
-
+    wkhtmltopdf_set_object_setting(g_info->in_setting, "page", html_path);
 
     /* Create the actual converter object used to convert the pages */
-    wkhtmltopdf_converter * c = wkhtmltopdf_create_converter(g_info->gs);
+    wkhtmltopdf_converter * c = wkhtmltopdf_create_converter(g_info->out_setting);
 
     /*
      * Add the the settings object describing the qstring documentation page
      * to the list of pages to convert. Objects are converted in the order in which
      * they are added
      */
-    wkhtmltopdf_add_object(c, g_info->os, NULL);
+    wkhtmltopdf_add_object(c, g_info->in_setting, NULL);
 
     /* Perform the actual conversion */
     if (!wkhtmltopdf_convert(c)){
@@ -127,9 +122,7 @@ void convert_pdf(convert_task * task,wk_global * g_info,safe_queue * dispatch){
     task->pdf_len = base64_len;
 
     printf("post %d,src %d pdf data: size %d, base64 %d\n", strlen(post_data),task->req->body_size,pdf_size,base64_len);
-//    if (task->req->body_size>700){
-//        printf("%s\n",post_data);
-//    }
+
 
     /* Destroy the converter object since we are done with it */
     wkhtmltopdf_destroy_converter(c);
