@@ -1,4 +1,0 @@
-/usr/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/home/xiufeng/clion-2022.3.2/bin/ninja/linux/x64/ninja -DCMAKE_C_COMPILER=/usr/bin/gcc -DCMAKE_CXX_COMPILER=/usr/bin/g++ -G Ninja -S /home/xiufeng/github/c-html2pdf -B /home/xiufeng/github/c-html2pdf/cmake-build-debug
--- Configuring done
--- Generating done
--- Build files have been written to: /home/xiufeng/github/c-html2pdf/cmake-build-debug

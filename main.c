@@ -33,16 +33,16 @@ int main() {
 
 
     /* 使用libevent创建HTTP Server */
-    pid_t pid;
-    pid = fork();
-    if (pid < 0) {
-        perror("fork failed");
-        exit(EXIT_FAILURE);
-    }
-    if (pid > 0) {
-        //生成子进程成功，退出父进程
-//            exit(EXIT_SUCCESS);
-    }
+//    pid_t pid;
+//    pid = fork();
+//    if (pid < 0) {
+//        perror("fork failed");
+//        exit(EXIT_FAILURE);
+//    }
+//    if (pid > 0) {
+//        //生成子进程成功，退出父进程
+////            exit(EXIT_SUCCESS);
+//    }
 
     threed_pool  * pool = init_pool(10,20);
     pdf_thread_info * thread_info = init_pdf_thread_info(10,pool->q);

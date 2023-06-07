@@ -1,3 +1,0 @@
-/home/xiufeng/github/c-html2pdf/cmake-build-debug/CMakeFiles/html2pdf.dir
-/home/xiufeng/github/c-html2pdf/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/xiufeng/github/c-html2pdf/cmake-build-debug/CMakeFiles/rebuild_cache.dir
