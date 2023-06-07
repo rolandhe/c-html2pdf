@@ -11,9 +11,10 @@
 typedef struct _pdf_thread_info {
     wait_one * waiter;
     safe_queue * q;
+    safe_queue * result_dispatch;
 } pdf_thread_info;
 
-pdf_thread_info  * init_pdf_thread_info(int cap);
+pdf_thread_info  * init_pdf_thread_info(int cap,safe_queue * dispatch);
 void destroy_pdf_thread_info(pdf_thread_info * info);
 
 void start_pdf_thread(pdf_thread_info * info);

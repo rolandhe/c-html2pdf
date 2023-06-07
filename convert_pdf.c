@@ -8,23 +8,23 @@
 #include <string.h>
 #include <sys/stat.h>
 #include "base64.h"
+#include "my_queue.h"
+#include <event.h>
+//for http
+#include <evhttp.h>
 
-
-convert_task * create_task(char * html){
+convert_task * create_task(struct evhttp_request *req){
     convert_task * task = (convert_task*) malloc(sizeof (convert_task));
-    int l = strlen(html);
-    task->html_body = (char*) malloc(l + 1);
-    strcpy(task->html_body,html);
+
+    task->req = req;
+
     task->pdf_len = 0;
-    task->waiter = init_wait_one();
     return task;
 }
 void destroy_task(convert_task * task){
     if (task->pdf_len > 0){
         free(task->pdf_base64);
     }
-    free(task->html_body);
-    destroy_wait_one(task->waiter);
     free(task);
 }
 
@@ -51,10 +51,10 @@ void build_path(char *path,char * ext){
     sprintf(path,"/tmp/%s.%s",s_uuid,ext);
 }
 
-void save_html(char * html,char* path){
+void save_html(char * html,int size,char* path){
     build_path(path,"html");
     FILE * out = fopen( path, "w");
-    fwrite(html,sizeof(char),strlen(html),out);
+    fwrite(html,sizeof(char),size,out);
     fclose(out);
 }
 
@@ -77,18 +77,20 @@ char * read_pdf_base64(char * pdf_path,int* base64_len){
     return base64_data;
 }
 
-void convert_pdf(convert_task * task,wk_global * g_info){
+void convert_pdf(convert_task * task,wk_global * g_info,safe_queue * dispatch){
     char html_path[512];
-    char pdf_path[512];
+//    char pdf_path[512];
     html_path[0] = '\0';
-    pdf_path[0] = '\0';
+//    pdf_path[0] = '\0';
 
-    save_html(task->html_body, html_path);
-    build_path(pdf_path,"pdf");
+
+    char *post_data = evbuffer_pullup(task->req->input_buffer,-1);
+    save_html(post_data, task->req->body_size,html_path);
+//    build_path(pdf_path,"pdf");
 
 
     /* We want the result to be storred in the file called test.pdf */
-    wkhtmltopdf_set_global_setting(g_info->gs, "out", pdf_path);
+//    wkhtmltopdf_set_global_setting(g_info->gs, "out", pdf_path);
 
 
 
@@ -114,17 +116,26 @@ void convert_pdf(convert_task * task,wk_global * g_info){
 
     /* Output possible http error code encountered */
     printf("httpErrorCode: %d\n", wkhtmltopdf_http_error_code(c));
+    char * pdf_data;
+    long pdf_size = wkhtmltopdf_get_output(c,&pdf_data);
+
+    int b64_len = Base64encode_len(pdf_size);
+    char * base64_data = malloc(b64_len+1);
+    int base64_len =  Base64encode(base64_data,pdf_data,pdf_size);
+//    char * base64_data = read_pdf_base64(pdf_path,&base64_len);
+    task->pdf_base64 = base64_data;
+    task->pdf_len = base64_len;
+
+    printf("post %d,src %d pdf data: size %d, base64 %d\n", strlen(post_data),task->req->body_size,pdf_size,base64_len);
+//    if (task->req->body_size>700){
+//        printf("%s\n",post_data);
+//    }
 
     /* Destroy the converter object since we are done with it */
     wkhtmltopdf_destroy_converter(c);
 
-    int base64_len;
-    char * base64_data = read_pdf_base64(pdf_path,&base64_len);
-    task->pdf_base64 = base64_data;
-    task->pdf_len = base64_len;
-
     remove(html_path);
-    remove(pdf_path);
+//    remove(pdf_path);
+    push(dispatch,task);
 
-    signal_wait_one(task->waiter);
 }

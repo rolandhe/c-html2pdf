@@ -14,7 +14,7 @@ void convert_pdf_func(pdf_thread_info *info){
     while (1){
         void * elem = pop(info->q);
         convert_task * task = (convert_task*)elem;
-        convert_pdf(task,g_info);
+        convert_pdf(task,g_info,info->result_dispatch);
     }
 }
 
@@ -26,9 +26,10 @@ void start_pdf_thread(pdf_thread_info * info){
 }
 
 
-pdf_thread_info  * init_pdf_thread_info(int cap){
+pdf_thread_info  * init_pdf_thread_info(int cap,safe_queue * dispatch){
     pdf_thread_info *info = (pdf_thread_info*) malloc(sizeof (pdf_thread_info));
     info->q = init_queue(cap);
+    info->result_dispatch = dispatch;
     info->waiter = init_wait_one();
     return info;
 }

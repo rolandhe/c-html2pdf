@@ -3,6 +3,7 @@
 
 #include "http-srv.h"
 #include "pdf-thread.h"
+#include "thread_pool.h"
 
 
 int main() {
@@ -17,24 +18,9 @@ int main() {
     int httpd_option_daemon = 0;
     int httpd_option_timeout = 120; //in seconds
 
+    printf("%ld\n",get_nano());
 
 
-
-//    //判断是否设置了-d，以daemon运行
-//    if (httpd_option_daemon) {
-//        pid_t pid;
-//        pid = fork();
-//        if (pid < 0) {
-//            perror("fork failed");
-//            exit(EXIT_FAILURE);
-//        }
-//        if (pid > 0) {
-//            //生成子进程成功，退出父进程
-//            exit(EXIT_SUCCESS);
-//        }
-//    }
-
-    /* 使用libevent创建HTTP Server */
 
 
     //初始化event API
@@ -46,7 +32,21 @@ int main() {
     evhttp_set_timeout(httpd, httpd_option_timeout);
 
 
-    pdf_thread_info * thread_info = init_pdf_thread_info(10);
+    /* 使用libevent创建HTTP Server */
+    pid_t pid;
+    pid = fork();
+    if (pid < 0) {
+        perror("fork failed");
+        exit(EXIT_FAILURE);
+    }
+    if (pid > 0) {
+        //生成子进程成功，退出父进程
+//            exit(EXIT_SUCCESS);
+    }
+
+    threed_pool  * pool = init_pool(10,20);
+    pdf_thread_info * thread_info = init_pdf_thread_info(10,pool->q);
+    start_pool(pool);
     start_pdf_thread(thread_info);
     //指定generic callback
     evhttp_set_cb(httpd,"/test", httpd_handler, NULL);
@@ -57,6 +57,7 @@ int main() {
     event_dispatch();
 
     destroy_pdf_thread_info(thread_info);
+    destroy_pool(pool);
     evhttp_free(httpd);
 
     return 0;
