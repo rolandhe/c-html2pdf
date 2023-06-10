@@ -1,14 +1,14 @@
 //
 // Created by xiufeng on 23-6-4.
 //
-#include "convert-pdf.h"
+#include "headers/convert-pdf.h"
 
 #include <uuid/uuid.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/stat.h>
-#include "base64.h"
-#include "my_queue.h"
+#include "headers/base64.h"
+#include "headers/my_queue.h"
 #include <event.h>
 //for http
 #include <evhttp.h>
@@ -111,17 +111,16 @@ void convert_pdf(convert_task * task,wk_global * g_info,safe_queue * dispatch){
 
     /* Output possible http error code encountered */
     printf("httpErrorCode: %d\n", wkhtmltopdf_http_error_code(c));
-    char * pdf_data;
+    const unsigned char * pdf_data;
     long pdf_size = wkhtmltopdf_get_output(c,&pdf_data);
 
     int b64_len = Base64encode_len(pdf_size);
     char * base64_data = malloc(b64_len+1);
     int base64_len =  Base64encode(base64_data,pdf_data,pdf_size);
-//    char * base64_data = read_pdf_base64(pdf_path,&base64_len);
     task->pdf_base64 = base64_data;
     task->pdf_len = base64_len;
 
-    printf("post %d,src %d pdf data: size %d, base64 %d\n", strlen(post_data),task->req->body_size,pdf_size,base64_len);
+    printf("post %ld,src %ld pdf data: size %ld, base64 %d\n", strlen(post_data),task->req->body_size,pdf_size,base64_len);
 
 
     /* Destroy the converter object since we are done with it */

@@ -2,13 +2,13 @@
 // Created by xiufeng on 23-6-6.
 //
 
-#include "thread_pool.h"
-#include "convert-pdf.h"
+#include "headers/thread_pool.h"
+#include "headers/convert-pdf.h"
 #include <event.h>
 #include <unistd.h>
 //for http
 #include <evhttp.h>
-#include "const_def.h"
+#include "headers/const_def.h"
 
 void output_http(safe_queue * q){
     while (1){

@@ -2,10 +2,10 @@
 // Created by xiufeng on 23-6-4.
 //
 
-#include "pdf-thread.h"
+#include "headers/pdf-thread.h"
 #include <malloc.h>
 #include <pthread.h>
-#include "convert-pdf.h"
+#include "headers/convert-pdf.h"
 
 
 void convert_pdf_func(pdf_thread_info *info){

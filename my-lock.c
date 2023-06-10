@@ -2,7 +2,7 @@
 // Created by xiufeng on 23-6-4.
 //
 
-#include "my-lock.h"
+#include "headers/my-lock.h"
 #include <malloc.h>
 
 my_lock * init_lock(){

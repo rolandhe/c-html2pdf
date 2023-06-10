@@ -2,7 +2,7 @@
 // Created by xiufeng on 23-6-4.
 //
 
-#include "my_queue.h"
+#include "headers/my_queue.h"
 #include <malloc.h>
 
 safe_queue  * init_queue(int cap){

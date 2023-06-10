@@ -1,16 +1,16 @@
 #include <stdio.h>
 #include <uuid/uuid.h>
 
-#include "http-srv.h"
-#include "pdf-thread.h"
-#include "thread_pool.h"
+#include "headers/http-srv.h"
+#include "headers/pdf-thread.h"
+#include "headers/thread_pool.h"
 
 
 int main() {
-    signal(SIGHUP, signal_handler);
-    signal(SIGTERM, signal_handler);
-    signal(SIGINT, signal_handler);
-    signal(SIGQUIT, signal_handler);
+//    signal(SIGHUP, signal_handler);
+//    signal(SIGTERM, signal_handler);
+//    signal(SIGINT, signal_handler);
+//    signal(SIGQUIT, signal_handler);
 
     //默认参数
     char *httpd_option_listen = "0.0.0.0";
