@@ -9,6 +9,29 @@
 //for http
 #include <evhttp.h>
 #include "headers/const_def.h"
+#include <json-c/json.h>
+
+void logger(const char * trace_id, const char * message){
+    if (trace_id){
+        printf("trace_id:%s,message:%s\n",trace_id,message);
+    } else{
+        printf("message:%s\n",message);
+    }
+}
+
+json_object * task_to_json(convert_task* task){
+    struct json_object *jobj;
+    jobj = json_object_new_object();
+    json_object_object_add(jobj, "success", json_object_new_boolean(task->pdf_len>0));
+    if (task->pdf_len == 0){
+        json_object_object_add(jobj, "code", json_object_new_int(5500));
+        json_object_object_add(jobj, "message", json_object_new_string("convert pdf failed"));
+    } else {
+        json_object_object_add(jobj, "code", json_object_new_int(200));
+        json_object_object_add(jobj, "data", json_object_new_string(task->pdf_base64));
+    }
+    return jobj;
+}
 
 void output_http(safe_queue * q){
     while (1){
@@ -26,17 +49,25 @@ void output_http(safe_queue * q){
         //输出的内容
         struct evbuffer *buf;
         buf = evbuffer_new();
-        if(task->pdf_len > 0){
-            evbuffer_add_printf(buf, "%s",task->pdf_base64);
-        }else{
-            evbuffer_add_printf(buf, "%s\n","failed");
+        struct json_object *result_json = task_to_json(task);
+        const char * json_str = json_object_to_json_string_ext(result_json,JSON_C_TO_STRING_SPACED | JSON_C_TO_STRING_PRETTY);
+#ifdef _USING_TRACE_MODE_
+        if (task->pdf_len > 0){
+            logger(task->trace_id_ref,task->pdf_base64);
         }
+        logger(task->trace_id_ref,json_str);
+#endif
+        evbuffer_add_printf(buf, "%s",json_str);
+
+        json_object_put(result_json); // Delete the json object
 
         evhttp_send_reply(req, HTTP_OK, "OK", buf);
         evbuffer_free(buf);
         destroy_task(task);
     }
 }
+
+
 
 void start_pool(threed_pool * pool){
     for (int i = 0; i < pool->size;i++){

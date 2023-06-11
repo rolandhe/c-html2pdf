@@ -6,15 +6,20 @@
 #include <uuid/uuid.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/stat.h>
 #include "headers/base64.h"
 #include "headers/my_queue.h"
 #include <event.h>
 //for http
 #include <evhttp.h>
 
+
 convert_task * create_task(struct evhttp_request *req){
     convert_task * task = (convert_task*) malloc(sizeof (convert_task));
+
+    struct evkeyvalq* headers = evhttp_request_get_input_headers(req);
+    if (headers){
+        task->trace_id_ref = evhttp_find_header(headers,"Trace-Id");
+    }
 
     task->req = req;
 
@@ -58,59 +63,34 @@ void save_html(char * html,int size,char* path){
     fclose(out);
 }
 
-//char * read_pdf_base64(char * pdf_path,int* base64_len){
-//    struct stat file_info;
-//    stat(pdf_path,&file_info);
-//    char * content = malloc(file_info.st_size);
-//    FILE * file = fopen(pdf_path,"r");
-//
-//    fread(content,sizeof (char),file_info.st_size,file);
-//    fclose(file);
-//
-//    int b64_len = Base64encode_len(file_info.st_size);
-//    char * base64_data = malloc(b64_len+1);
-//
-//    int b_len =  Base64encode(base64_data,content,file_info.st_size);
-//    printf("base64 encoded len:%d\n",b_len);
-//    free(content);
-//    *base64_len = b_len;
-//    return base64_data;
-//}
-
 void convert_pdf(convert_task * task,wk_global * g_info,safe_queue * dispatch){
     char html_path[512];
-//    char pdf_path[512];
     html_path[0] = '\0';
-//    pdf_path[0] = '\0';
-
 
     char *post_data = evbuffer_pullup(task->req->input_buffer,-1);
     save_html(post_data, task->req->body_size,html_path);
-//    build_path(pdf_path,"pdf");
-
-    /* We want the result to be storred in the file called test.pdf */
-//    wkhtmltopdf_set_global_setting(g_info->out_setting, "out", pdf_path);
-
-    /* We want to convert to convert the qstring documentation page */
     wkhtmltopdf_set_object_setting(g_info->in_setting, "page", html_path);
-
-    /* Create the actual converter object used to convert the pages */
     wkhtmltopdf_converter * c = wkhtmltopdf_create_converter(g_info->out_setting);
-
-    /*
-     * Add the the settings object describing the qstring documentation page
-     * to the list of pages to convert. Objects are converted in the order in which
-     * they are added
-     */
     wkhtmltopdf_add_object(c, g_info->in_setting, NULL);
 
     /* Perform the actual conversion */
     if (!wkhtmltopdf_convert(c)){
-        printf("Conversion failed!");
+        if(task->trace_id_ref){
+            printf("trace_id:%s,message: %s\n",task->trace_id_ref,"Conversion failed!");
+        } else{
+            printf("message: %s\n","Conversion failed!");
+        }
     }
 
     /* Output possible http error code encountered */
-    printf("httpErrorCode: %d\n", wkhtmltopdf_http_error_code(c));
+#ifdef _USING_TRACE_MODE_
+    if(task->trace_id_ref){
+        printf("trace_id:%s,httpErrorCode: %d\n",task->trace_id_ref, wkhtmltopdf_http_error_code(c));
+    } else{
+        printf("httpErrorCode: %d\n", wkhtmltopdf_http_error_code(c));
+    }
+#endif
+
     const unsigned char * pdf_data;
     long pdf_size = wkhtmltopdf_get_output(c,&pdf_data);
 
@@ -120,7 +100,11 @@ void convert_pdf(convert_task * task,wk_global * g_info,safe_queue * dispatch){
     task->pdf_base64 = base64_data;
     task->pdf_len = base64_len;
 
-    printf("post %ld,src %ld pdf data: size %ld, base64 %d\n", strlen(post_data),task->req->body_size,pdf_size,base64_len);
+    if(task->trace_id_ref){
+        printf("trace_id:%s,post %ld,src %ld pdf data: size %ld, base64 %d\n",task->trace_id_ref, strlen(post_data),task->req->body_size,pdf_size,base64_len);
+    } else{
+        printf("post %ld,src %ld pdf data: size %ld, base64 %d\n", strlen(post_data),task->req->body_size,pdf_size,base64_len);
+    }
 
 
     /* Destroy the converter object since we are done with it */

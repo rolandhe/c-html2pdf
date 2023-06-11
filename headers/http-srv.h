@@ -17,6 +17,7 @@
 #include <time.h>
 #include "const_def.h"
 
+
 long get_nano(){
     struct timespec spec;
     clock_gettime(CLOCK_REALTIME,&spec);
@@ -26,15 +27,7 @@ long get_nano(){
 void pdf_handler(struct evhttp_request *req, void *arg) {
     safe_queue * q = (safe_queue*)arg;
 
-
 //    long start = get_nano();
-
-
-//    printf("cost %ld\n",get_nano() - start);
-//    char *post_data = (char *) EVBUFFER_DATA(req->input_buffer);
-//    printf("%d\n",req->body_size);
-//    printf("%d\n",strlen(post_data));
-//    printf("%s\n",post_data);
 
     convert_task *task = create_task(req);
 
@@ -42,23 +35,13 @@ void pdf_handler(struct evhttp_request *req, void *arg) {
     if (ok){
         return;
     }
-    char *post_data = evbuffer_pullup(req->input_buffer,-1);
+//    char *post_data = evbuffer_pullup(req->input_buffer,-1);
 
     evhttp_add_header(req->output_headers, "Server", MYHTTPD_SIGNATURE);
     evhttp_add_header(req->output_headers, "Content-Type", "text/plain; charset=UTF-8");
     evhttp_add_header(req->output_headers, "Connection", "keep-alive");
-    //输出的内容
-//    struct evbuffer *buf;
-//    buf = evbuffer_new();
-//    if(ok && task->pdf_len > 0){
-//        evbuffer_add_printf(buf, "%s",task->pdf_base64);
-//    }else{
-//        evbuffer_add_printf(buf, "%s\n","failed");
-//    }
-//    destroy_task(task);
     evhttp_send_reply(req, 429, "Too Many Requests", NULL);
     evhttp_request_free(req);
-//    evbuffer_free(buf);
 }
 
 //当向进程发出SIGTERM/SIGHUP/SIGINT/SIGQUIT的时候，终止event的事件侦听循环
@@ -74,9 +57,6 @@ void signal_handler(int sig) {
 }
 
 void httpd_handler(struct evhttp_request *req, void *arg) {
-//    char *post_data = (char *) EVBUFFER_DATA(req->input_buffer);
-//    printf("%ld\n",req->body_size);
-//    printf("%ld\n",strlen(post_data));
     sleep(20);
     evhttp_add_header(req->output_headers, "Server", MYHTTPD_SIGNATURE);
     evhttp_add_header(req->output_headers, "Content-Type", "text/plain; charset=UTF-8");

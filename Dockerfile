@@ -12,7 +12,7 @@ COPY fonts/ /usr/share/fonts/
 
 RUN apt-get update -y
 RUN apt-get install -y wget
-RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_amd64.deb
+#RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_amd64.deb
 
 
 RUN apt-get install -y tar
@@ -32,20 +32,22 @@ RUN apt-get install -y libuuid1
 RUN apt-get install -y uuid-dev
 RUN apt-get install -y libevent-2.1-7
 RUN apt-get install -y libevent-dev
+RUN apt-get install -y libjson-c-dev
+RUN apt-get install -y libjson-c5
 
 
 RUN apt-get install -y cmake
 
 
 
-RUN dpkg -i wkhtmltox_0.12.6.1-2.jammy_amd64.deb
+RUN dpkg -i lib/wkhtmltox_0.12.6.1-2.jammy_amd64.deb
 
 RUN ldconfig
 
 
 RUN sh build.sh
 
-RUN rm -f wkhtmltox_0.12.6.1-2.jammy_amd64.deb
+RUN rm -fr lib
 RUN rm -fr fonts
 
 EXPOSE 8080

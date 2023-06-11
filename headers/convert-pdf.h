@@ -14,6 +14,7 @@ typedef struct _convert_task{
   unsigned char * pdf_base64;
   int pdf_len;
   struct evhttp_request *req;
+  const char * trace_id_ref;
 } convert_task;
 
 typedef struct _wk_global {
