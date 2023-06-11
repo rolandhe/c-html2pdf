@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22)
 project(html2pdf C)
 
-add_compile_definitions(_USING_TRACE_MODE_)
+add_compile_definitions(_USING_TRACE_MODE_ _OUT_RESULT_)
 
 SET(CMAKE_BUILD_TYPE "Release")
 SET(CMAKE_C_STANDARD 11)

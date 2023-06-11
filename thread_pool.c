@@ -51,7 +51,7 @@ void output_http(safe_queue * q){
         buf = evbuffer_new();
         struct json_object *result_json = task_to_json(task);
         const char * json_str = json_object_to_json_string_ext(result_json,JSON_C_TO_STRING_SPACED | JSON_C_TO_STRING_PRETTY);
-#ifdef _USING_TRACE_MODE_
+#ifdef _OUT_RESULT_
         if (task->pdf_len > 0){
             logger(task->trace_id_ref,task->pdf_base64);
         }
