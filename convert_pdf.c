@@ -11,6 +11,7 @@
 #include <event.h>
 //for http
 #include <evhttp.h>
+#include <json-c/json.h>
 
 
 convert_task * create_task(struct evhttp_request *req){
@@ -57,10 +58,23 @@ void build_path(char *path,char * ext){
 }
 
 void save_html(char * html,int size,char* path){
+    const char * str = (const char *) malloc(size+1);
+    strncpy(str,html,size);
+    struct json_object * jobj = json_tokener_parse(str);
+    // parse json
+    struct json_object *body_jobj;
+    json_object_object_get_ex(jobj, "body", &body_jobj);
+
+    int body_len = json_object_get_string_len(body_jobj);
+    const char * body = json_object_get_string(body_jobj);
+
+
     build_path(path,"html");
     FILE * out = fopen( path, "w");
-    fwrite(html,sizeof(char),size,out);
+    fwrite(body,sizeof(char),body_len,out);
     fclose(out);
+    json_object_put(jobj);
+    free(str);
 }
 
 void convert_pdf(convert_task * task,wk_global * g_info,safe_queue * dispatch){
