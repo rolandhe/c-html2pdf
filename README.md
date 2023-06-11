@@ -30,11 +30,11 @@ post json格式：
 * 打包
 * 
 ```
-    docker build -t c-html2pdf:1.0  .
+docker build -t c-html2pdf:1.0  .
 ```
 
 * 运行
 
 ```
- docker run -t -p 8087:8080 c-html2pdf:1.0 
+docker run -t -p 8087:8080 c-html2pdf:1.0 
 ```
