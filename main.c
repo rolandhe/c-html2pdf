@@ -46,7 +46,7 @@ int main() {
     //指定generic callback
     evhttp_set_cb(httpd,"/test", httpd_handler, NULL);
     //也可以为特定的URI指定callback
-    evhttp_set_cb(httpd, "/infra/pdfcnv/internal/v1/convertHtml", pdf_handler, thread_info->q);
+    evhttp_set_cb(httpd, "/infra/pdfconv/internal/v1/convertHtml", pdf_handler, thread_info->q);
 
     //循环处理events
     event_dispatch();

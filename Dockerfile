@@ -10,7 +10,7 @@ COPY . .
 COPY fonts/ /usr/share/fonts/
 
 
-RUN apt-get update -y
+RUN apt-get update -y --fix-missing
 RUN apt-get install -y wget
 #RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.jammy_amd64.deb
 
